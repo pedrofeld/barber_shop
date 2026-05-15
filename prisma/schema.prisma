@@ -11,3 +11,65 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings  Booking[]
+}
+
+model BarberShop {
+  id          String   @id @default(uuid())
+  name      String
+  description String
+  address   String
+  imageUrl String
+  phones      String[]
+  services    BarberShopService[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BarberShopService {
+  id           String   @id @default(uuid())
+  barberShopId String
+  name         String
+  description  String
+  price        Float
+  duration     Int // duration in minutes
+  imageUrl     String
+  bookings     Booking[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  barberShop   BarberShop @relation(fields: [barberShopId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id        String            @id @default(uuid())
+  userId    String
+  serviceId String
+  date      DateTime
+  status    BookingStatusEnum @default(pending)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service   BarberShopService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+}
+
+enum BookingStatusEnum {
+  pending
+  cancelled
+  completed
+  confirmed
+}
